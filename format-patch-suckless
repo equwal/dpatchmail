@@ -1,0 +1,2 @@
+#!/bin/sh
+format-patch-clang -- --subject-prefix="${PWD##*/}][PATCH"

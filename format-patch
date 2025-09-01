@@ -1,0 +1,20 @@
+#!/bin/sh
+# also see suckless-format-patch and friends
+[ -z "$1" ] && EMAIL="$(prompt-mail)"
+[ -n "$1" ] && EMAIL="$1"
+echo "Formatting a patch file..."
+TAG="$(git tag --points-at HEAD^)"
+TAGDIFF="${PWD##*/}-$(sed 's:.*/::' .git/HEAD)-$(date +%Y%m%d)-$TAG.diff"
+fp () {
+    file="${PWD##*/}-$(sed 's:.*/::' .git/HEAD)-$1.diff"
+    git format-patch \
+        --to "$EMAIL" \
+        --stdout HEAD^ \
+        > "$file" \
+    && echo "Wrote $file."
+}
+[ -n "$TAG" ] && fp "$TAG"
+[ -z "$TAG" ] && fp "$(date +%Y%m%d)-$(git rev-parse --short HEAD)"
+echo "Patch made."
+y-or-n "git-send-email it right now?" && git-send-email --to "$EMAIL" "$file" \
+  && y-or-n "delete patch file?" && rm "$file"
